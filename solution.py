@@ -1,3 +1,4 @@
+from pprint import pprint
 import sys
 import pygame
 
@@ -21,13 +22,38 @@ class Board:
 
 
     def render(self, screen):
-        for i in range(len(self.board)):
-            for j in range(len(self.board[0])):
+        for i in range(len(self.board[0])):
+            for j in range(len(self.board)):
                 color = pygame.Color('white')
                 rect = self.left + i * self.cell_size, self.top + j * self.cell_size, self.cell_size, self.cell_size
                 pygame.draw.rect(screen, color, rect, 1)
-                # if self.board[i][j] == 1:
-                #     color = pygame.Color('white')
+
+                if self.board[j][i] == 0:
+                    color = pygame.Color('black')
+
+                pygame.draw.rect(screen, color, (rect[0] + 1, rect[1] + 1, rect[2] - 2, rect[3] - 2), 0)
+
+
+    def get_click(self, mouse_pos):
+        cell = self.get_cell(mouse_pos)
+        self.on_click(cell)
+
+
+    def get_cell(self, mouse_pos):
+        x, y = mouse_pos
+        if (self.left + len(self.board[0]) * self.cell_size < x or x < self.left
+                or self.top + len(self.board) * self.cell_size < y or y < self.top):
+            return None
+        else:
+            return ((x - self.left) // self.cell_size, (y - self.top) // self.cell_size)
+
+    def on_click(self, cell):
+        if cell:
+            x, y = cell
+            self.board[y][x] = 1 - self.board[y][x]
+            # pprint(self.board)
+
+
 
 
 def main():
@@ -41,6 +67,9 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                board.get_click(event.pos)
+
         screen.fill((0, 0, 0))
         board.render(screen)
         pygame.display.flip()
